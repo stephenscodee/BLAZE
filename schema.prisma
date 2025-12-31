@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  credits       Int       @default(10)
+  projects      Project[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Project {
+  id          String       @id @default(uuid())
+  name        String
+  description String?
+  userId      String
+  user        User         @relation(fields: [userId], references: [id])
+  generations Generation[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+enum GenerationStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model Generation {
+  id             String           @id @default(uuid())
+  prompt         String
+  negativePrompt String?
+  stylePreset    String           @default("REALISTIC")
+  aspectRatio    String           @default("1:1")
+  status         GenerationStatus @default(PENDING)
+  errorMessage   String?
+  projectId      String
+  project        Project          @relation(fields: [projectId], references: [id])
+  assets         ImageAsset[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+enum AssetType {
+  ORIGINAL
+  UPSCALE
+  VARIATION
+}
+
+model ImageAsset {
+  id           String     @id @default(uuid())
+  s3Key        String
+  width        Int
+  height       Int
+  isFavorite   Boolean    @default(false)
+  versionType  AssetType  @default(ORIGINAL)
+  generationId String
+  generation   Generation @relation(fields: [generationId], references: [id])
+  createdAt    DateTime   @default(now())
+}

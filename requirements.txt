@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+python-multipart
+pydantic
+redis
+celery
+diffusers
+transformers
+accelerate
+torch
+pillow
+python-dotenv
+boto3
